@@ -1,0 +1,10 @@
+.vs/
+packages/
+bin/
+obj/
+
+*.bak
+*.dll
+*.mdb
+
+
