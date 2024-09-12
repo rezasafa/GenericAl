@@ -22,8 +22,8 @@ namespace GenericAl
 
         int _JamiyatMax;
         int _BestFit;
-        List<int[]> Jamiyat;
-        public Kernel(List<MainData> data, List<ScaleAllData> scale,int JamiyatMax,int BestFit)
+
+        public Kernel(List<MainData> data, List<ScaleAllData> scale, int JamiyatMax, int BestFit)
         {
             _data = data;
             _scale = scale;
@@ -32,14 +32,83 @@ namespace GenericAl
         }
 
 
-        public List<int[]> InitializePopulation()
+        /// <summary>
+        /// یک لیست از جمعیت می ساز
+        /// تعداد جمعیت در پارمتر های تعریف کلاس می آید
+        /// </summary>
+        /// <returns>لیستی از جمعیت</returns>
+        public List<CalculatedData> InitializePopulation()
         {
+            List<CalculatedData> Jamiyat = new List<CalculatedData>();
+            List<string> strJamiyat = new List<string>();
 
-            for (int i = 1; i<= _JamiyatMax; i++)
+            int[] Chromosome = ConvertDataListToChromosome();
+            string strChromosome = Create_Chromosome_String(Chromosome);
+
+            for (int i = 1; i < _JamiyatMax; i++)
             {
+                int[] parent = (int[])Chromosome.Clone();
+                bool exists = strJamiyat.Any(s => s.Contains(strChromosome));
+                while (exists)
+                {
+                    int[] myval = CreateNewInvertion(Chromosome);
+                    strChromosome = Create_Chromosome_String(Chromosome);
+                    Chromosome = myval;
+                    exists = strJamiyat.Any(s => s.Contains(strChromosome));
+                }
 
+                strJamiyat.Add(strChromosome);
+
+
+                CalculatedData calculatedData = new CalculatedData();
+                calculatedData.strChromotion = strChromosome;
+                calculatedData.Chromotion = Chromosome;
+                calculatedData.Parent = parent;
+                calculatedData.strParent = Create_Chromosome_String(parent);
+                calculatedData.mutationRate = CalculateFitnessChromosome(Chromosome, _scale);
+
+                Jamiyat.Add(calculatedData);
             }
             return Jamiyat;
+        }
+
+        /// <summary>
+        /// محاسبه اندازه یک کروموزوم
+        /// این محاسبه در هر پروژه متفوت است
+        /// تمامی پارمتر های محاسباتی الگوریتم ژنتیک
+        /// در این روتین محاسبه می شود
+        /// </summary>
+        /// <param name="Chromosome">کروموزوم</param>
+        /// <param name="scales">لیستی از اندازه ها</param>
+        /// <returns>اندازه محاسبه شده</returns>
+        public double CalculateFitnessChromosome(int[] Chromosome, List<ScaleAllData> scales)
+        {
+            int[] myval = (int[])Chromosome.Clone();
+            int index = 0;
+            int next = 0;
+            double sum = 0;
+            while (index < Chromosome.Length)
+            {
+
+                next = index + 1;
+                if (next < Chromosome.Length)
+                {
+                    var find = scales.Where(v =>
+                        ((v.MainDataId == myval[index]) || (v.MainDataIdNext == myval[index]))
+                        &&
+                        ((v.MainDataId == myval[next]) || (v.MainDataIdNext == myval[next]))
+                    );
+                    if (find != null)
+                        if (find.Count() > 0)
+                            sum += find.First().ScaleValue;
+
+                }
+
+
+
+                index++;
+            }
+            return sum;
         }
 
         public string CalculateAL()
@@ -72,7 +141,7 @@ namespace GenericAl
             bool findRepeat = true;
             int[] array = (int[])child.Clone();
             int[] result = (int[])child.Clone();
-            
+
             while (findRepeat)
             {
                 var dict = new Dictionary<int, int>();
@@ -146,7 +215,7 @@ namespace GenericAl
         {
 
             Random rnd = new Random();
-            int CrossPoint = rnd.Next(minRandom, Parent1.Length/2);
+            int CrossPoint = rnd.Next(minRandom, Parent1.Length / 2);
 
             int[] copyParent1 = (int[])Parent1.Clone();
             int[] copyParent2 = (int[])Parent2.Clone();
@@ -301,6 +370,18 @@ namespace GenericAl
 
             return Result;
         }
+        /// <summary>
+        /// معکوس کردن یک کروموزوم
+        /// در این حالت نقطه شروع دیگر متفاوت می شود
+        /// </summary>
+        /// <param name="Chromosome">کروموزوم</param>
+        /// <returns>یک کروموزوم</returns>
+        public int[] CreateNewReverse(int[] Chromosome)
+        {
+            int[] Result = (int[])Chromosome.Clone();         
+
+            return Result.Reverse().ToArray(); ;
+        }
 
         /// <summary>
         /// کوچکترین مقدار کروموزوم را بدست می آورد
@@ -320,7 +401,7 @@ namespace GenericAl
             var min = _data.OrderBy(m => m.Id).Last();
             return min.Id;
         }
-        
+
         /// <summary>
         /// تبدیل یک لیست به کروموزوم
         /// </summary>

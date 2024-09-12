@@ -1,6 +1,7 @@
 ﻿using GenericAl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 
 Console.WriteLine("Salam, Tedad Shahrharooo begoo  = ");
@@ -53,7 +54,16 @@ foreach (ScaleAllData item in ListAllScale)
     Console.WriteLine(CounterLoop.ToString() + " - " + ValName1 + " ----- " + ValName2 + " = " + item.ScaleValue);
 }
 
-var al = new Kernel(mainDatas, ListAllScale);
-Console.WriteLine(al.CalculateAL());
+var al = new Kernel(mainDatas, ListAllScale, 100, 2000);
+List<CalculatedData> firstPopulation = new List<CalculatedData>();
+firstPopulation = al.InitializePopulation().OrderBy(v => v.mutationRate).ToList();
+CounterLoop = 0;
+foreach (CalculatedData item in firstPopulation)
+{
+    CounterLoop++;
+    Console.WriteLine(CounterLoop.ToString() + "- {" + al.Create_Chromosome_String(item.Chromotion) + "} = " + item.mutationRate);
+}
+
+
 Console.ReadKey();
 
