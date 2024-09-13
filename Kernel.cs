@@ -152,7 +152,8 @@ namespace GenericAl
                     }
                 }
 
-                GenerateNewPopulation = GenerateNewPopulation.OrderBy(v => v.mutationRate).ToList();    
+                GenerateNewPopulation = GenerateNewPopulation.OrderBy(v => v.mutationRate).ToList();
+                LastGenerationPopulation = GenerateNewPopulation;
                 BestChromosome = GenerateNewPopulation.First();
                 Console.WriteLine("[" + CounterLoop.ToString() + "]- {" + Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
                 CounterLoop++;

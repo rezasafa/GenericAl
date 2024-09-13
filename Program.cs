@@ -7,7 +7,12 @@ using System.Linq;
 
 Console.WriteLine("Salam, Tedad Shahrharooo begoo  = ");
 string Count = Console.ReadLine();
-
+Console.WriteLine("behtarin javab o begoo  = ");
+string Best = Console.ReadLine();
+Console.WriteLine("Tedad talash ta behtarin javab o begoo  = ");
+string Tedadtry = Console.ReadLine();
+int TryCount = int.Parse(Tedadtry);
+int BestFitness = int.Parse(Best);
 int MainDataCount = int.Parse(Count);
 List<MainData> mainDatas = new List<MainData>();
 for (int i = 1; i <= MainDataCount; i++)
@@ -55,7 +60,7 @@ foreach (ScaleAllData item in ListAllScale)
     Console.WriteLine(CounterLoop.ToString() + " - " + ValName1 + " ----- " + ValName2 + " = " + item.ScaleValue);
 }
 
-var al = new Kernel(mainDatas, ListAllScale, 100, 2000,50);
+var al = new Kernel(mainDatas, ListAllScale, 100, BestFitness,TryCount);
 string a = al.CalculateAL();
 
 Console.ReadKey();
