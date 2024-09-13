@@ -20,15 +20,17 @@ namespace GenericAl
         List<ScaleAllData> _scale;
         List<CalculatedData> _calculatedDatas;
 
+        int _Generation;
         int _JamiyatMax;
         int _BestFit;
 
-        public Kernel(List<MainData> data, List<ScaleAllData> scale, int JamiyatMax, int BestFit)
+        public Kernel(List<MainData> data, List<ScaleAllData> scale, int JamiyatMax, int BestFit,int Generation)
         {
             _data = data;
             _scale = scale;
             _JamiyatMax = JamiyatMax;
             _BestFit = BestFit;
+            _Generation = Generation;
         }
 
 
@@ -113,19 +115,63 @@ namespace GenericAl
 
         public string CalculateAL()
         {
+            List<CalculatedData> CreateFirstPopulation = new List<CalculatedData>();
+            List<CalculatedData> LastGenerationPopulation = new List<CalculatedData>();
+            CreateFirstPopulation = InitializePopulation().OrderBy(v => v.mutationRate).ToList();
 
-            int[] myval = ConvertDataListToChromosome();
-            string result = "";
+            CalculatedData BestChromosome = CreateFirstPopulation.First();
+            LastGenerationPopulation = CreateFirstPopulation;
+            Console.WriteLine("[" + 1.ToString() + "]- {" + Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
+            int CounterLoop = 1;
+            while (BestChromosome.mutationRate > _BestFit)
+            {
+                List<CalculatedData> GenerateNewPopulation = new List<CalculatedData>();
 
-            result += "\n" + "parent = " + Create_Chromosome_String(myval);
-            myval = ConvertDataListToChromosome();
-            result += "\n" + "swap = " + Create_Chromosome_String(CreateNewSwap(myval));
-            result += "\n" + "swap2 = " + Create_Chromosome_String(CreateNewSwap(myval));
-            myval = ConvertDataListToChromosome();
-            result += "\n" + "invertion = " + Create_Chromosome_String(CreateNewInvertion(myval));
-            result += "\n" + "insertion = " + Create_Chromosome_String(CreateNewInsertion(myval));
+                for (int i = 0; i < LastGenerationPopulation.Count; i++)
+                {
+                    if (isOdd(i))
+                    {
+                        List<int[]> co = new List<int[]>();
+                        co = CreateCrossOver(LastGenerationPopulation[i].Chromotion, LastGenerationPopulation[i - 1].Chromotion, 1);
+                        if (co.Count > 0)
+                        {
+                            int ParentID = i;
+                            foreach (int[] Chromosome in co)
+                            {
+                                CalculatedData calculatedData = new CalculatedData();
+                                calculatedData.Chromotion = Chromosome;
+                                calculatedData.strChromotion = Create_Chromosome_String(Chromosome);
+                                calculatedData.Parent = LastGenerationPopulation[ParentID].Chromotion;
+                                calculatedData.strParent = Create_Chromosome_String(LastGenerationPopulation[i].Chromotion);
+                                calculatedData.mutationRate = CalculateFitnessChromosome(Chromosome,_scale);
 
-            return result;
+                                GenerateNewPopulation.Add(calculatedData);
+                                ParentID--;
+                            }
+                        }
+                    }
+                }
+
+                GenerateNewPopulation = GenerateNewPopulation.OrderBy(v => v.mutationRate).ToList();    
+                BestChromosome = GenerateNewPopulation.First();
+                Console.WriteLine("[" + CounterLoop.ToString() + "]- {" + Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
+                CounterLoop++;
+
+                if (CounterLoop == _Generation) break;
+            }
+
+            //int[] myval = ConvertDataListToChromosome();
+            //string result = "";
+
+            //result += "\n" + "parent = " + Create_Chromosome_String(myval);
+            //myval = ConvertDataListToChromosome();
+            //result += "\n" + "swap = " + Create_Chromosome_String(CreateNewSwap(myval));
+            //result += "\n" + "swap2 = " + Create_Chromosome_String(CreateNewSwap(myval));
+            //myval = ConvertDataListToChromosome();
+            //result += "\n" + "invertion = " + Create_Chromosome_String(CreateNewInvertion(myval));
+            //result += "\n" + "insertion = " + Create_Chromosome_String(CreateNewInsertion(myval));
+
+            return "";
         }
 
         /// <summary>
@@ -150,7 +196,7 @@ namespace GenericAl
 
                 //آنهایی که در فرزند وجود ندارد را پیدا  میکند
                 IEnumerable<int> aOnlyNumbers = Parent.Except(child);
-                Console.WriteLine("Numbers in first array but not second array:");
+                //Console.WriteLine("Numbers in first array but not second array:");
                 foreach (var n in aOnlyNumbers)
                 {
                     NotExistValue.Add(n);
@@ -378,7 +424,7 @@ namespace GenericAl
         /// <returns>یک کروموزوم</returns>
         public int[] CreateNewReverse(int[] Chromosome)
         {
-            int[] Result = (int[])Chromosome.Clone();         
+            int[] Result = (int[])Chromosome.Clone();
 
             return Result.Reverse().ToArray(); ;
         }
