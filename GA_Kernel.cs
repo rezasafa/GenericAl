@@ -1,42 +1,40 @@
-﻿using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.XPath;
 
 namespace GenericAl
 {
-    public class Kernel
+    /// <summary>
+    /// این کلاس کار های عمومی و معمول یک الگوریتم را انجام می دهد
+    /// </summary>
+    public class GA_Kernel
     {
         List<MainData> _data;
         List<ScaleAllData> _scale;
         List<CalculatedData> _calculatedDatas;
 
         int _Generation;
-        int _JamiyatMax;
+        int _PopulationMax;
         int _BestFit;
 
-        public Kernel(List<MainData> data, List<ScaleAllData> scale, int JamiyatMax, int BestFit,int Generation)
+        public GA_Kernel(List<MainData> data, List<ScaleAllData> scale, int PopulationMax, int BestFit, int Generation)
         {
             _data = data;
             _scale = scale;
-            _JamiyatMax = JamiyatMax;
+            _PopulationMax = PopulationMax;
             _BestFit = BestFit;
             _Generation = Generation;
         }
 
-
         /// <summary>
         /// یک لیست از جمعیت می ساز
         /// تعداد جمعیت در پارمتر های تعریف کلاس می آید
+        /// ***
+        /// محاسبه هر کروموزوم به دلیل متفاوت بودن نوع محاسبه خارج از این تابع انجام می شود 
+        /// خروجی بدون محاسبه است
+        /// ***
         /// </summary>
         /// <returns>لیستی از جمعیت</returns>
         public List<CalculatedData> InitializePopulation()
@@ -47,7 +45,7 @@ namespace GenericAl
             int[] Chromosome = ConvertDataListToChromosome();
             string strChromosome = Create_Chromosome_String(Chromosome);
 
-            for (int i = 1; i < _JamiyatMax; i++)
+            for (int i = 1; i < _PopulationMax; i++)
             {
                 int[] parent = (int[])Chromosome.Clone();
                 bool exists = strJamiyat.Any(s => s.Contains(strChromosome));
@@ -67,112 +65,14 @@ namespace GenericAl
                 calculatedData.Chromotion = Chromosome;
                 calculatedData.Parent = parent;
                 calculatedData.strParent = Create_Chromosome_String(parent);
-                calculatedData.mutationRate = CalculateFitnessChromosome(Chromosome, _scale);
+
+                //این محاسبه خارج از تابع انجام می شود
+                //خروجی بدون محاسبه است
+                //calculatedData.mutationRate = CalculateFitnessChromosome(Chromosome, _scale);
 
                 Jamiyat.Add(calculatedData);
             }
             return Jamiyat;
-        }
-
-        /// <summary>
-        /// محاسبه اندازه یک کروموزوم
-        /// این محاسبه در هر پروژه متفوت است
-        /// تمامی پارمتر های محاسباتی الگوریتم ژنتیک
-        /// در این روتین محاسبه می شود
-        /// </summary>
-        /// <param name="Chromosome">کروموزوم</param>
-        /// <param name="scales">لیستی از اندازه ها</param>
-        /// <returns>اندازه محاسبه شده</returns>
-        public double CalculateFitnessChromosome(int[] Chromosome, List<ScaleAllData> scales)
-        {
-            int[] myval = (int[])Chromosome.Clone();
-            int index = 0;
-            int next = 0;
-            double sum = 0;
-            while (index < Chromosome.Length)
-            {
-
-                next = index + 1;
-                if (next < Chromosome.Length)
-                {
-                    var find = scales.Where(v =>
-                        ((v.MainDataId == myval[index]) || (v.MainDataIdNext == myval[index]))
-                        &&
-                        ((v.MainDataId == myval[next]) || (v.MainDataIdNext == myval[next]))
-                    );
-                    if (find != null)
-                        if (find.Count() > 0)
-                            sum += find.First().ScaleValue;
-
-                }
-
-
-
-                index++;
-            }
-            return sum;
-        }
-
-        public string CalculateAL()
-        {
-            List<CalculatedData> CreateFirstPopulation = new List<CalculatedData>();
-            List<CalculatedData> LastGenerationPopulation = new List<CalculatedData>();
-            CreateFirstPopulation = InitializePopulation().OrderBy(v => v.mutationRate).ToList();
-
-            CalculatedData BestChromosome = CreateFirstPopulation.First();
-            LastGenerationPopulation = CreateFirstPopulation;
-            Console.WriteLine("[" + 1.ToString() + "]- {" + Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
-            int CounterLoop = 1;
-            while (BestChromosome.mutationRate > _BestFit)
-            {
-                List<CalculatedData> GenerateNewPopulation = new List<CalculatedData>();
-
-                for (int i = 0; i < LastGenerationPopulation.Count; i++)
-                {
-                    if (isOdd(i))
-                    {
-                        List<int[]> co = new List<int[]>();
-                        co = CreateCrossOver(LastGenerationPopulation[i].Chromotion, LastGenerationPopulation[i - 1].Chromotion, 1);
-                        if (co.Count > 0)
-                        {
-                            int ParentID = i;
-                            foreach (int[] Chromosome in co)
-                            {
-                                CalculatedData calculatedData = new CalculatedData();
-                                calculatedData.Chromotion = Chromosome;
-                                calculatedData.strChromotion = Create_Chromosome_String(Chromosome);
-                                calculatedData.Parent = LastGenerationPopulation[ParentID].Chromotion;
-                                calculatedData.strParent = Create_Chromosome_String(LastGenerationPopulation[i].Chromotion);
-                                calculatedData.mutationRate = CalculateFitnessChromosome(Chromosome,_scale);
-
-                                GenerateNewPopulation.Add(calculatedData);
-                                ParentID--;
-                            }
-                        }
-                    }
-                }
-
-                GenerateNewPopulation = GenerateNewPopulation.OrderBy(v => v.mutationRate).ToList();
-                LastGenerationPopulation = GenerateNewPopulation;
-                BestChromosome = GenerateNewPopulation.First();
-                Console.WriteLine("[" + CounterLoop.ToString() + "]- {" + Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
-                CounterLoop++;
-
-                if (CounterLoop == _Generation) break;
-            }
-
-            //int[] myval = ConvertDataListToChromosome();
-            //string result = "";
-
-            //result += "\n" + "parent = " + Create_Chromosome_String(myval);
-            //myval = ConvertDataListToChromosome();
-            //result += "\n" + "swap = " + Create_Chromosome_String(CreateNewSwap(myval));
-            //result += "\n" + "swap2 = " + Create_Chromosome_String(CreateNewSwap(myval));
-            //myval = ConvertDataListToChromosome();
-            //result += "\n" + "invertion = " + Create_Chromosome_String(CreateNewInvertion(myval));
-            //result += "\n" + "insertion = " + Create_Chromosome_String(CreateNewInsertion(myval));
-
-            return "";
         }
 
         /// <summary>
@@ -434,7 +334,7 @@ namespace GenericAl
         /// کوچکترین مقدار کروموزوم را بدست می آورد
         /// </summary>
         /// <returns>عدد</returns>
-        private int GetMinIndex()
+        public int GetMinIndex()
         {
             var min = _data.OrderBy(m => m.Id).First();
             return min.Id;
@@ -443,7 +343,7 @@ namespace GenericAl
         /// بزرگترین مقدار کروموزوم را بدست می آورد
         /// </summary>
         /// <returns>عدد</returns>
-        private int GetMaxIndex()
+        public int GetMaxIndex()
         {
             var min = _data.OrderBy(m => m.Id).Last();
             return min.Id;
@@ -471,7 +371,7 @@ namespace GenericAl
         /// </summary>
         /// <param name="number">عد ورودی</param>
         /// <returns>درست یعنی زوج</returns>
-        private static bool isEven(int number)
+        public bool isEven(int number)
         {
             return (number % 2 == 0);
         }
@@ -480,7 +380,7 @@ namespace GenericAl
         /// </summary>
         /// <param name="number">عد ورودی</param>
         /// <returns>درست یعنی فرد</returns>
-        private static bool isOdd(int number)
+        public bool isOdd(int number)
         {
             return (number % 2 != 0);
         }
@@ -500,7 +400,7 @@ namespace GenericAl
         /// <param name="Index">نقطه که باید ژن اضافه شود</param>
         /// <param name="Values">ژن</param>
         /// <returns>کروموزوم</returns>
-        private int[] InsertItemInArray(int[] Chromosome, int Index, int Values)
+        public int[] InsertItemInArray(int[] Chromosome, int Index, int Values)
         {
             int[] myArray = (int[])Chromosome.Clone();
             int indexToInsert = Index;
@@ -518,7 +418,7 @@ namespace GenericAl
         /// <param name="Chromosome">کروموزوم</param>
         /// <param name="Values">ژن</param>
         /// <returns>کروموزوم</returns>
-        private int[] DeleteItemInArray(int[] Chromosome, int Values)
+        public int[] DeleteItemInArray(int[] Chromosome, int Values)
         {
             int[] numbers = (int[])Chromosome.Clone();
             int numToRemove = Values;
@@ -527,43 +427,5 @@ namespace GenericAl
             return numbers;
         }
     }
-
-    public class MainData
-    {
-
-        [Key]
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int Vazn { get; set; }
-
-        public ICollection<ScaleAllData> ScaleAllDatas { get; set; } = new List<ScaleAllData>();
-
-    }
-
-    public class ScaleAllData
-    {
-        [Key]
-        public int Id { get; set; }
-
-        public int MainDataId { get; set; }
-        public MainData MainData { get; set; } = null;
-
-        public int MainDataIdNext { get; set; }
-
-        public int ScaleValue { get; set; }
-
-    }
-
-    public class CalculatedData
-    {
-        public int[] Parent { get; set; }
-        public string strParent { get; set; }
-
-        public int[] Chromotion { get; set; }
-        public string strChromotion { get; set; }
-
-        public double mutationRate { get; set; }
-    }
-
 
 }
