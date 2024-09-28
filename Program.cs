@@ -5,7 +5,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 
 int SystemAL;
-Console.WriteLine("Yeki ra entekhab Konid .... ;");
+Console.WriteLine("Salam . Yeki ra entekhab Konid .... ;");
 Console.WriteLine("1. Frooshandh DorehGard ;");
 Console.WriteLine("2. n Vazir ;");
 
@@ -82,7 +82,7 @@ switch (SystemAL)
     case 2:
         {
             //هشت وزیر
-            Console.WriteLine("Salam, Tedad vazir o begoo  = ");
+            Console.WriteLine("Lotfan, Tedad vazir o begoo  = ");
             string Count = Console.ReadLine();
             //بهترین جواب در این الگوریتم وزیر باید صفر باشد برای همین 
             //این سوال را بیخیال میشیم
