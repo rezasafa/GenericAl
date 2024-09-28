@@ -5,9 +5,9 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 
 int SystemAL;
-Console.WriteLine("Yeki ra entekhab KOnid.... ;");
+Console.WriteLine("Yeki ra entekhab Konid .... ;");
 Console.WriteLine("1. Frooshandh DorehGard ;");
-Console.WriteLine("2. 8 Vazir ;");
+Console.WriteLine("2. n Vazir ;");
 
 string inputVal = Console.ReadLine();
 SystemAL = int.Parse(inputVal);
@@ -36,7 +36,6 @@ switch (SystemAL)
                 Console.WriteLine(md.Name);
 
             }
-
 
             List<ScaleAllData> ListAllScale = new List<ScaleAllData>();
 

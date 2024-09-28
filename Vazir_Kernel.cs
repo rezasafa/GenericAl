@@ -42,7 +42,6 @@ namespace GenericAl
         /// <returns>اندازه محاسبه شده</returns>
         public double CalculateFitnessChromosome(int[] Chromosome)
         {
-            PrintBoard(Chromosome);
             int[] myval = (int[])Chromosome.Clone();
             int index = 0;
             int next = 0;
@@ -52,7 +51,10 @@ namespace GenericAl
             {
                 for (int y = x + 1; y < _BoardSize; y++)
                 {
-                    //if (myval[sotoon] - myval[radif] == 0)
+                    if (Chromosome[x] == Chromosome[y] || Math.Abs(Chromosome[x] - Chromosome[y]) == y- x)
+                    {
+                        sum++;
+                    }
                 }
             }
             return sum;
@@ -78,14 +80,13 @@ namespace GenericAl
             //مرتب سازی از کوچکترین به بزرگترین
             CreateFirstPopulation = CreateFirstPopulation.OrderBy(v => v.mutationRate).ToList();
 
-
             CalculatedData BestChromosome = CreateFirstPopulation.First();
             LastGenerationPopulation = CreateFirstPopulation;
             Console.WriteLine("[" + 1.ToString() + "]- {" + Generic_Al.Create_Chromosome_String(BestChromosome.Chromotion) + "} = " + BestChromosome.mutationRate);
             int CounterLoop = 1;
             while (BestChromosome.mutationRate > _BestFit)
             {
-                break;
+                
                 List<CalculatedData> GenerateNewPopulation = new List<CalculatedData>();
 
                 for (int i = 0; i < LastGenerationPopulation.Count; i++)
@@ -121,18 +122,19 @@ namespace GenericAl
 
                 if (CounterLoop == _Generation) break;
             }
-
+            PrintBoard(BestChromosome.Chromotion);
             return "";
         }
 
         private void PrintBoard(int[] chromosome)
         {
-            Console.WriteLine("javab = {" + String.Join(", ", chromosome) + "}");
+            Console.WriteLine("javab = {" + String.Join(", ", chromosome) + "} = " + CalculateFitnessChromosome(chromosome).ToString());
             for (int i = 1; i <= _BoardSize; i++)
             {
                 for (int j = 1; j <= _BoardSize; j++)
                 {
-                    Console.Write(chromosome[i-1] == j ? "Q " : "# ");
+                    Console.Write(chromosome[i-1
+                        ] == j ? "Q " : "# ");
                 }
                 Console.WriteLine();
             }
