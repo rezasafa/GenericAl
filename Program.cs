@@ -84,8 +84,10 @@ switch (SystemAL)
             //هشت وزیر
             Console.WriteLine("Salam, Tedad vazir o begoo  = ");
             string Count = Console.ReadLine();
-            Console.WriteLine("behtarin javab o begoo  = ");
-            string Best = Console.ReadLine();
+            //بهترین جواب در این الگوریتم وزیر باید صفر باشد برای همین 
+            //این سوال را بیخیال میشیم
+            //Console.WriteLine("behtarin javab o begoo  = ");
+            string Best = "0";// Console.ReadLine();
             Console.WriteLine("Tedad talash ta behtarin javab o begoo  = ");
             string Tedadtry = Console.ReadLine();
             int TryCount = int.Parse(Tedadtry);
@@ -104,40 +106,7 @@ switch (SystemAL)
             }
 
 
-            List<ScaleAllData> ListAllScale = new List<ScaleAllData>();
-
-            foreach (MainData md in mainDatas)
-            {
-                var WithOutMD = mainDatas.Where(m => m.Id != md.Id).ToList();
-                foreach (var m in WithOutMD)
-                {
-
-                    var serach_Repeat1 = ListAllScale.Where(w => w.MainDataId == md.Id && w.MainDataIdNext == m.Id).ToList();
-                    var serach_Repeat2 = ListAllScale.Where(w => w.MainDataId == m.Id && w.MainDataIdNext == md.Id).ToList();
-
-                    if (serach_Repeat1.Count == 0 && serach_Repeat2.Count == 0)
-                    {
-                        Random rnd = new Random();
-                        int rInt = rnd.Next(1, MainDataCount);
-                        ScaleAllData scaleAll = new ScaleAllData();
-                        scaleAll.MainDataId = md.Id;
-                        scaleAll.MainDataIdNext = m.Id;
-                        scaleAll.ScaleValue = rInt;
-
-                        ListAllScale.Add(scaleAll);
-                    }
-                }
-            }
-            int CounterLoop = 0;
-            foreach (ScaleAllData item in ListAllScale)
-            {
-                CounterLoop++;
-                string ValName1 = mainDatas.Where(w => w.Id == item.MainDataId).FirstOrDefault().Name;
-                string ValName2 = mainDatas.Where(w => w.Id == item.MainDataIdNext).FirstOrDefault().Name;
-                Console.WriteLine(CounterLoop.ToString() + " - " + ValName1 + " ----- " + ValName2 + " = " + item.ScaleValue);
-            }
-
-            var al = new Vazir_Kernel(mainDatas, ListAllScale, 100, BestFitness, TryCount,MainDataCount);
+            var al = new Vazir_Kernel(mainDatas, null, 100, BestFitness, TryCount,MainDataCount);
             string a = al.CalculateAL();
 
             Console.ReadKey();
